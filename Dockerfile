@@ -4,16 +4,16 @@ WORKDIR /app
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
-
-# Copy from the cache instead of linking since it's a multi-stage-like build
 ENV UV_LINK_MODE=copy
 
-# Install dependencies
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev
-
-# Copy the rest of the application
+# Copy all application files first
 COPY . .
 
-# Run the bot
-CMD ["uv", "run", "python", "bot.py"]
+# Create venv and install dependencies at build time
+RUN uv venv --python 3.12 && uv sync --no-dev
+
+# Make entrypoint executable
+RUN chmod +x docker-entrypoint.sh
+
+# Run migrations before starting the app
+ENTRYPOINT ["./docker-entrypoint.sh"]

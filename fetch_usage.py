@@ -3,10 +3,16 @@ import sys
 import json
 import asyncio
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 import aiohttp
 from dotenv import load_dotenv
-from models import ModelUsageResponse, ToolUsageResponse, QuotaLimitResponse
+from models import (
+    ModelUsageResponse,
+    ToolUsageResponse,
+    QuotaLimitResponse,
+    set_api_timezone,
+    detect_timezone_from_latest_hour,
+)
 
 # Load environment variables
 load_dotenv()
@@ -94,12 +100,16 @@ class UsageFetcher:
             tool_data = await get_json(self.urls["tool"], params)
             quota_data = await get_json(self.urls["quota"])
 
+            # Detect and set API timezone based on model data
+            raw_model_data = model_data.get("data", model_data)
+            latest_time = raw_model_data.get("x_time", [""])[-1]
+            detected_tz = detect_timezone_from_latest_hour(latest_time)
+            set_api_timezone(detected_tz)
+
             processed_quota = process_quota_limit(quota_data.get("data", quota_data))
 
             return {
-                "model": ModelUsageResponse.model_validate(
-                    model_data.get("data", model_data)
-                ),
+                "model": ModelUsageResponse.model_validate(raw_model_data),
                 "tool": ToolUsageResponse.model_validate(
                     tool_data.get("data", tool_data)
                 ),

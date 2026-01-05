@@ -16,3 +16,7 @@ env/
 
 # Environment variables
 .env
+
+# Alembic (database migrations can be regenerated)
+alembic/versions/*.py
+!alembic/versions/.gitkeep

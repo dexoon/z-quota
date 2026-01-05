@@ -1,0 +1,15 @@
+services:
+  z-quota:
+    build: .
+    restart: unless-stopped
+    environment:
+      # Telegram Bot Configuration
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - CHAT_ID=${CHAT_ID}
+
+      # Anthropic/Zhipu API Configuration
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
+      - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
+
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL}
